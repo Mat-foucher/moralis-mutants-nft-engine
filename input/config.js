@@ -123,7 +123,7 @@ const height = 1000;
 // description for NFT in metadata file
 const description = "Moralis Mutants - Survivors of Rekt City";
 // base url in case no unique metadata file i.e IPFS
-const baseImageUri = "YOUR_MORALIS_SERVER_URL";
+const baseImageUri = "https://8b1fubk7hvi5.usemoralis.com:2053/server";
 // id for edition to start from
 const startEditionFrom = 1;
 // amount of NFTs to generate in edition
@@ -134,7 +134,7 @@ const editionDnaPrefix = 0;
 // create required weights
 // for each weight, call 'addRarity' with the id and from which to which element this rarity should be applied
 let rarityWeights = [
-  /* 
+  /*
   addRarity("super_rare", 1, 1),
   addRarity("rare", 1, 1),
   */
@@ -146,14 +146,14 @@ let rarityWeights = [
 // the id would be the name of the folder in your input directory, e.g. 'ball' for ./input/ball
 const layers = [
   addLayer("Background", { x: 0, y: 0 }, { width: width, height: height }),
-  addLayer("Base Torso"),
-  addLayer("Base Head"),
+  //addLayer("Base Torso"),
+  //addLayer("Base Head"),
   addLayer("Torso"),
   addLayer("Arms"),
-  addLayer("Mouths"),
+  //addLayer("Mouths"),
   addLayer("Eyes"),
-  addLayer("Accessories"),
-  addLayer("Noses"),
+  //addLayer("Accessories"),
+  //addLayer("Noses"),
 ];
 
 // provide any specific percentages that are required for a given layer and rarity level
@@ -162,6 +162,18 @@ addRarityPercentForLayer("original", "Eyes", {
   super_rare: 0,
   rare: 0,
   original: 100,
+});
+
+addRarityPercentForLayer("rare", "Eyes", {
+  super_rare: 0,
+  rare: 40,
+  original: 60,
+});
+
+addRarityPercentForLayer("super_rare", "Eyes", {
+  super_rare: 20,
+  rare: 40,
+  original: 40,
 });
 
 module.exports = {
