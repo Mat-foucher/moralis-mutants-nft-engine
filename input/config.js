@@ -134,11 +134,11 @@ const editionDnaPrefix = 0;
 // create required weights
 // for each weight, call 'addRarity' with the id and from which to which element this rarity should be applied
 let rarityWeights = [
-  /*
-  addRarity("super_rare", 1, 1),
-  addRarity("rare", 1, 1),
-  */
   addRarity("original", 1, editionSize),
+  addRarity("rare", editionSize, 2*editionSize),
+  addRarity("super_rare", 2*editionSize, 4*editionSize),
+  
+  
 ];
 
 // create required layers
@@ -174,6 +174,24 @@ addRarityPercentForLayer("super_rare", "Eyes", {
   super_rare: 20,
   rare: 40,
   original: 40,
+});
+
+addRarityPercentForLayer("rare", "Torso", {
+  super_rare: 20,
+  rare: 20,
+  original: 60,
+});
+
+addRarityPercentForLayer("super_rare", "Torso", {
+  super_rare: 10,
+  rare: 20,
+  original: 70,
+});
+
+addRarityPercentForLayer("super_rare", "Background", {
+  super_rare: 5,
+  rare: 25,
+  original: 70,
 });
 
 module.exports = {
