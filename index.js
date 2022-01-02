@@ -19,9 +19,9 @@ const canvas = createCanvas(width, height);
 const ctx = canvas.getContext("2d");
 
 // Moralis creds
-const appId = "tLlTFz2TxGZSAPNiORZi97n4SyYJkPQFpQHGo3hF";
-const serverUrl = "https://8b1fubk7hvi5.usemoralis.com:2053/server";
-const masterKey = "5T14VaFG0wI1aILZC8Dao7ovEviEJInna5I4ynyX"; // DO NOT DISPLAY IN PUBLIC DIR
+const appId = "YWgrOYl5O2AZxqZTBPzlGCtFLtZw0dhVa10QRl5T";
+const serverUrl = "https://9mhekzfw7j5i.usemoralis.com:2053/server";
+const masterKey = "AAKAC91m0fy75jm3drnRiOg1hGSocVfj13J0TI2y"; // DO NOT DISPLAY IN PUBLIC DIR
 
 Moralis.start({ serverUrl, appId, masterKey });
 
@@ -275,7 +275,7 @@ const startCreating = async () => {
       console.log("Metadata: ", metadata);
       console.log("File Path: ", filePath);
       console.log(
-        "Mutant " + editionCount.toString() + " a resident of Moralis"
+        "Brother " + editionCount.toString() + " a brother of the gum."
       );
 
       const data = {
