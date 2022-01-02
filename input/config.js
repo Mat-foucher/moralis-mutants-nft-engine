@@ -134,34 +134,64 @@ const editionDnaPrefix = 0;
 // create required weights
 // for each weight, call 'addRarity' with the id and from which to which element this rarity should be applied
 let rarityWeights = [
-  /* 
-  addRarity("super_rare", 1, 1),
-  addRarity("rare", 1, 1),
-  */
+ 
   addRarity("original", 1, editionSize),
+  addRarity("rare", editionSize, 2*editionSize),
+  addRarity("super_rare", 2*editionSize, 4*editionSize),
 ];
+
 
 // create required layers
 // for each layer, call 'addLayer' with the id and optionally the positioning and size
 // the id would be the name of the folder in your input directory, e.g. 'ball' for ./input/ball
 const layers = [
   addLayer("Background", { x: 0, y: 0 }, { width: width, height: height }),
-  addLayer("Base Torso"),
-  addLayer("Base Head"),
+  //addLayer("Base Torso"),
+  //addLayer("Base Head"),
   addLayer("Torso"),
   addLayer("Arms"),
-  addLayer("Mouths"),
+  //addLayer("Mouths"),
   addLayer("Eyes"),
   addLayer("Accessories"),
-  addLayer("Noses"),
+  //addLayer("Noses"),
 ];
 
 // provide any specific percentages that are required for a given layer and rarity level
 // all provided options are used based on their percentage values to decide which layer to select from
 addRarityPercentForLayer("original", "Eyes", {
+  super_rare: 10,
+  rare: 40,
+  original: 50,
+});
+
+addRarityPercentForLayer("rare", "Eyes", {
   super_rare: 0,
-  rare: 0,
-  original: 100,
+  rare: 50,
+  original: 50,
+});
+
+addRarityPercentForLayer("super_rare", "Eyes", {
+  super_rare: 20,
+  rare: 40,
+  original: 40,
+});
+
+addRarityPercentForLayer("rare", "Torso", {
+  super_rare: 10,
+  rare: 40,
+  original: 40,
+});
+
+addRarityPercentForLayer("super_rare", "Torso", {
+  super_rare: 5,
+  rare: 45,
+  original: 40,
+});
+
+addRarityPercentForLayer("rare", "Arms", {
+  super_rare: 0,
+  rare: 40,
+  original: 60,
 });
 
 module.exports = {
