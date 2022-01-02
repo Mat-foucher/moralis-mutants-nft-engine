@@ -1,205 +1,63 @@
-const fs = require("fs");
+// import dependencies
+const console = require("console");
+const dotenv = require("dotenv");
+dotenv.config(); // setup dotenv
+
 // utilise Moralis
 const Moralis = require("moralis/node");
+
 // canvas for image compile
-const { createCanvas, loadImage } = require("canvas");
+const { createCanvas } = require("canvas");
+
 // import config
 const {
   layers,
   width,
   height,
-  description,
-  baseImageUri,
   editionSize,
   startEditionFrom,
-  rarityWeights,
+  rarityWeights
 } = require("./input/config.js");
-const console = require("console");
+
+// import metadata
+const { compileMetadata } = require("./src/metadata");
+
+// import for saving files
+const { createFile } = require("./src/filesystem");
+
+// setup canvas
 const canvas = createCanvas(width, height);
 const ctx = canvas.getContext("2d");
 
 // Moralis creds
-const appId = "YWgrOYl5O2AZxqZTBPzlGCtFLtZw0dhVa10QRl5T";
-const serverUrl = "https://9mhekzfw7j5i.usemoralis.com:2053/server";
-const masterKey = "AAKAC91m0fy75jm3drnRiOg1hGSocVfj13J0TI2y"; // DO NOT DISPLAY IN PUBLIC DIR
+
+const serverUrl = process.env.SERVER_URL;
+const appId = process.env.APP_ID;
+const masterKey = process.env.MASTER_KEY;
+const apiUrl = process.env.API_URL;
+// xAPIKey available here: https://deep-index.moralis.io/api-docs/#/storage/uploadFolder
+const apiKey = process.env.API_KEY;
+
+// Start Moralis session
 
 Moralis.start({ serverUrl, appId, masterKey });
 
-// adds a signature to the top left corner of the canvas
-const signImage = (_sig) => {
-  ctx.fillStyle = "#000000";
-  ctx.font = "bold 30pt Courier";
-  ctx.textBaseline = "top";
-  ctx.textAlign = "left";
-  ctx.fillText(_sig, 40, 40);
-};
-
-// generate a random color hue
-const genColor = () => {
-  let hue = Math.floor(Math.random() * 360);
-  let pastel = `hsl(${hue}, 100%, 85%)`;
-  return pastel;
-};
-
-const drawBackground = () => {
-  ctx.fillStyle = genColor();
-  ctx.fillRect(0, 0, width, height);
-};
-
-// add metadata for individual nft edition
-const generateMetadata = (_dna, _edition, _attributesList, _path) => {
-  let dateTime = Date.now();
-  let tempMetadata = {
-    dna: _dna.join(""),
-    name: `#${_edition}`,
-    description: description,
-    image: _path || baseImageUri,
-    edition: _edition,
-    date: dateTime,
-    attributes: _attributesList,
-  };
-  return tempMetadata;
-};
-
-// prepare attributes for the given element to be used as metadata
-const getAttributeForElement = (_element) => {
-  let selectedElement = _element.layer.selectedElement;
-  let attribute = {
-    name: selectedElement.name,
-    rarity: selectedElement.rarity,
-  };
-  return attribute;
-};
-
-// loads an image from the layer path
-// returns the image in a format usable by canvas
-const loadLayerImg = async (_layer) => {
-  return new Promise(async (resolve) => {
-    const image = await loadImage(`${_layer.selectedElement.path}`);
-    resolve({ layer: _layer, loadedImage: image });
-  });
-};
-
-const drawElement = (_element) => {
-  ctx.drawImage(
-    _element.loadedImage,
-    _element.layer.position.x,
-    _element.layer.position.y,
-    _element.layer.size.width,
-    _element.layer.size.height
-  );
-};
-
-// check the configured layer to find information required for rendering the layer
-// this maps the layer information to the generated dna and prepares it for
-// drawing on a canvas
-const constructLayerToDna = (_dna = [], _layers = [], _rarity) => {
-  let mappedDnaToLayers = _layers.map((layer, index) => {
-    let selectedElement = layer.elements.find(
-      (element) => element.id === _dna[index]
-    );
-    return {
-      location: layer.location,
-      position: layer.position,
-      size: layer.size,
-      selectedElement: { ...selectedElement, rarity: _rarity },
-    };
-  });
-  return mappedDnaToLayers;
-};
-
-// check if the given dna is contained within the given dnaList
-// return true if it is, indicating that this dna is already in use and should be recalculated
-const isDnaUnique = (_DnaList = [], _dna = []) => {
-  let foundDna = _DnaList.find((i) => i.join("") === _dna.join(""));
-  return foundDna == undefined ? true : false;
-};
-
-const getRandomRarity = (_rarityOptions) => {
-  let randomPercent = Math.random() * 100;
-  let percentCount = 0;
-
-  for (let i = 0; i <= _rarityOptions.length; i++) {
-    percentCount += _rarityOptions[i].percent;
-    if (percentCount >= randomPercent) {
-      console.log(`use random rarity ${_rarityOptions[i].id}`);
-      return _rarityOptions[i].id;
-    }
-  }
-  return _rarityOptions[0].id;
-};
-
-// create a dna based on the available layers for the given rarity
-// use a random part for each layer
-const createDna = (_layers, _rarity) => {
-  let randNum = [];
-  let _rarityWeight = rarityWeights.find((rw) => rw.value === _rarity);
-  _layers.forEach((layer) => {
-    let num = Math.floor(
-      Math.random() * layer.elementIdsForRarity[_rarity].length
-    );
-    if (_rarityWeight && _rarityWeight.layerPercent[layer.id]) {
-      // if there is a layerPercent defined, we want to identify which dna to actually use here (instead of only picking from the same rarity)
-      let _rarityForLayer = getRandomRarity(
-        _rarityWeight.layerPercent[layer.id]
-      );
-      num = Math.floor(
-        Math.random() * layer.elementIdsForRarity[_rarityForLayer].length
-      );
-      randNum.push(layer.elementIdsForRarity[_rarityForLayer][num]);
-    } else {
-      randNum.push(layer.elementIdsForRarity[_rarity][num]);
-    }
-  });
-  return randNum;
-};
-
-// holds which rarity should be used for which image in edition
-let rarityForEdition;
-let filePath = null;
-// get the rarity for the image by edition number that should be generated
-const getRarity = (_editionCount) => {
-  if (!rarityForEdition) {
-    // prepare array to iterate over
-    rarityForEdition = [];
-    rarityWeights.forEach((rarityWeight) => {
-      for (let i = rarityWeight.from; i <= rarityWeight.to; i++) {
-        rarityForEdition.push(rarityWeight.value);
-      }
-    });
-  }
-  return rarityForEdition[editionSize - _editionCount];
-};
-
-const writeMetaData = (_data) => {
-  fs.writeFileSync("./output/_metadata.json", _data);
-};
-
-// holds which dna has already been used during generation
-let dnaListByRarity = {};
-// holds metadata for all NFTs
-let metadataList = [];
 // Create generative art by using the canvas api
 const startCreating = async () => {
   console.log("##################");
   console.log("# Generative Art #");
   console.log("# - Generating your NFT collection");
   console.log("##################");
-  console.log();
 
-  // clear meta data from previous run
-  writeMetaData("");
-
-  // prepare dnaList object
-  rarityWeights.forEach((rarityWeight) => {
-    dnaListByRarity[rarityWeight.value] = [];
-  });
+  // image data collection
+  let imageDataArray = [];
 
   // create NFTs from startEditionFrom to editionSize
   let editionCount = startEditionFrom;
 
   while (editionCount <= editionSize) {
     console.log("-----------------");
+
     console.log("Mutating %d of %d", editionCount, editionSize);
 
     // upload to ipfs
@@ -329,16 +187,36 @@ const startCreating = async () => {
       await FileDatabase.save();
     };
 
+
     const handleFinal = async () => {
-      const image = await saveFileIPFS();
-      await uploadMetadata(image);
+      // create image files and return object array of created images
+      [...imageDataArray] = await createFile(
+        canvas,
+        ctx,
+        layers,
+        width,
+        height,
+        editionCount,
+        editionSize,
+        rarityWeights,
+        imageDataArray
+      );
     };
 
     await handleFinal();
     // iterate
     editionCount++;
   }
-  writeMetaData(JSON.stringify(metadataList));
+
+  await compileMetadata(
+    apiUrl,
+    apiKey,
+    editionCount,
+    editionSize,
+    imageDataArray
+  );
+
+  console.log();
   console.log("#########################################");
   console.log("Welcome to Rekt City - Meet the Survivors");
   console.log("#########################################");
