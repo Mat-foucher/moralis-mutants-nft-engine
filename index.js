@@ -19,9 +19,9 @@ const canvas = createCanvas(width, height);
 const ctx = canvas.getContext("2d");
 
 // Moralis creds
-const appId = "YOUR_MORALIS_APP_ID";
-const serverUrl = "YOUR_MORALIS_SERVER_URL";
-const masterKey = "YOUR_MORALIS_MASTER_KEY"; // DO NOT DISPLAY IN PUBLIC DIR
+const appId = "YWgrOYl5O2AZxqZTBPzlGCtFLtZw0dhVa10QRl5T";
+const serverUrl = "https://9mhekzfw7j5i.usemoralis.com:2053/server";
+const masterKey = "AAKAC91m0fy75jm3drnRiOg1hGSocVfj13J0TI2y"; // DO NOT DISPLAY IN PUBLIC DIR
 
 Moralis.start({ serverUrl, appId, masterKey });
 
